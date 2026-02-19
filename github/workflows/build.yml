@@ -1,0 +1,30 @@
+name: Build Better Crafting Mobile
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '6.0.x'
+    - name: Download dependencies
+      run: |
+        mkdir -p GameLibs
+        wget -q https://github.com/nickel-dev/stardew-references/raw/main/StardewModdingAPI.dll -O GameLibs/StardewModdingAPI.dll
+        wget -q "https://github.com/nickel-dev/stardew-references/raw/main/Stardew Valley.dll" -O "GameLibs/Stardew Valley.dll"
+        wget -q https://github.com/nickel-dev/stardew-references/raw/main/MonoGame.Framework.dll -O GameLibs/MonoGame.Framework.dll
+    - name: Build
+      run: dotnet build BetterCraftingMobile.csproj -c Release
+    - name: Package
+      run: |
+        mkdir -p ModOutput/BetterCraftingMobile
+        cp bin/Release/net6.0/BetterCraftingMobile.dll ModOutput/BetterCraftingMobile/
+        cp manifest.json ModOutput/BetterCraftingMobile/
+    - uses: actions/upload-artifact@v3
+      with:
+        name: BetterCraftingMobile
+        path: ModOutput/
